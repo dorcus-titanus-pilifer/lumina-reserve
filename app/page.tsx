@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import Link from "next/link";
 
 export default async function Home() {
   const menus = await prisma.menu.findMany({
@@ -24,8 +25,9 @@ export default async function Home() {
 
         <div className="mt-10 flex flex-col divide-y divide-[#E4DDD0] border-t border-b border-[#E4DDD0]">
           {menus.map((menu) => (
-            <button
+            <Link
               key={menu.id.toString()}
+              href={`/reserve/${menu.id}/staff`}
               className="flex items-center justify-between py-5 text-left transition-colors hover:bg-[#F1ECE2]"
             >
               <span>
@@ -37,7 +39,7 @@ export default async function Home() {
               <span className="text-lg" style={{ fontFamily: "var(--font-heading)" }}>
                 ¥{menu.price.toLocaleString()}
               </span>
-            </button>
+            </Link>
           ))}
         </div>
 
