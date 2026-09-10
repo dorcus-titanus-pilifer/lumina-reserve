@@ -1,0 +1,141 @@
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+// ==========================================
+// 1. users（スタッフ・管理者）
+// ==========================================
+model User {
+  id             BigInt   @id @default(autoincrement())
+  name           String   @db.VarChar(100)
+  role           Role
+  nominationFee  Int      @default(0) @map("nomination_fee")
+  isActive       Boolean  @default(true) @map("is_active")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  staffMenus           StaffMenu[]
+  shifts               Shift[]
+  reservationsAsStaff  Reservation[] @relation("StaffReservations")
+  reservationsCreated  Reservation[] @relation("CreatedByUser")
+
+  @@map("users")
+}
+
+enum Role {
+  ADMIN
+  STAFF
+}
+
+// ==========================================
+// 2. customers（顧客）
+// ==========================================
+model Customer {
+  id         BigInt   @id @default(autoincrement())
+  name       String   @db.VarChar(100)
+  email      String?  @db.VarChar(255)
+  phone      String   @db.VarChar(20)
+  lineUserId String?  @unique @map("line_user_id") @db.VarChar(255)
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  reservations Reservation[]
+
+  @@map("customers")
+}
+
+// ==========================================
+// 3. menus（施術メニュー）
+// ==========================================
+model Menu {
+  id              BigInt   @id @default(autoincrement())
+  title           String   @db.VarChar(100)
+  price           Int
+  durationMinutes Int      @map("duration_minutes")
+  isActive        Boolean  @default(true) @map("is_active")
+
+  staffMenus   StaffMenu[]
+  reservations Reservation[]
+
+  @@map("menus")
+}
+
+// ==========================================
+// 4. staff_menus（スタッフ対応メニュー紐付け）
+// ==========================================
+model StaffMenu {
+  id     BigInt @id @default(autoincrement())
+  userId BigInt @map("user_id")
+  menuId BigInt @map("menu_id")
+
+  user User @relation(fields: [userId], references: [id])
+  menu Menu @relation(fields: [menuId], references: [id])
+
+  @@unique([userId, menuId])
+  @@map("staff_menus")
+}
+
+// ==========================================
+// 5. reservations（予約データ）
+// ==========================================
+model Reservation {
+  id               BigInt            @id @default(autoincrement())
+  customerId       BigInt            @map("customer_id")
+  staffId          BigInt            @map("staff_id")
+  createdByUserId  BigInt?           @map("created_by_user_id")
+  menuId           BigInt            @map("menu_id")
+  startTime        DateTime          @map("start_time")
+  endTime          DateTime          @map("end_time")
+  status           ReservationStatus
+  source           ReservationSource
+  isNominated      Boolean           @default(false) @map("is_nominated")
+  reminderSentAt   DateTime?         @map("reminder_sent_at")
+  createdAt        DateTime          @default(now()) @map("created_at")
+
+  customer      Customer @relation(fields: [customerId], references: [id])
+  staff         User     @relation("StaffReservations", fields: [staffId], references: [id])
+  createdByUser User?    @relation("CreatedByUser", fields: [createdByUserId], references: [id])
+  menu          Menu     @relation(fields: [menuId], references: [id])
+
+  @@map("reservations")
+}
+
+enum ReservationStatus {
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+  NO_SHOW
+}
+
+enum ReservationSource {
+  WEB
+  PHONE
+  STORE
+}
+
+// ==========================================
+// 6. shifts（スタッフ出勤シフト）
+// ==========================================
+model Shift {
+  id        BigInt   @id @default(autoincrement())
+  staffId   BigInt   @map("staff_id")
+  workDate  DateTime @map("work_date") @db.Date
+  startTime DateTime @map("start_time") @db.Time
+  endTime   DateTime @map("end_time") @db.Time
+
+  staff User @relation(fields: [staffId], references: [id])
+
+  @@map("shifts")
+}
+
+// ==========================================
+// 7. shop_holidays（店舗定休日・臨時休業）
+// ==========================================
+model ShopHoliday {
+  id          BigInt   @id @default(autoincrement())
+  holidayDate DateTime @unique @map("holiday_date") @db.Date
+  description String?  @db.VarChar(255)
+
+  @@map("shop_holidays")
+}
