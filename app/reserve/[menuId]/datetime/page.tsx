@@ -6,8 +6,6 @@ const SLOT_INTERVAL_MINUTES = 30;
 const JST_OFFSET_HOURS = 9;
 
 function combineDateAndTime(date: Date, time: Date): Date {
-  // シフトのTime型フィールドは「日本時間の見た目の時刻」がそのまま入っているので、
-  // 実際のUTC時刻に変換するために9時間引く
   return new Date(
     Date.UTC(
       date.getUTCFullYear(),
@@ -22,7 +20,6 @@ function combineDateAndTime(date: Date, time: Date): Date {
 }
 
 function formatTime(d: Date): string {
-  // 内部はUTCで計算しているので、表示するときだけ日本時間に戻す
   const jst = new Date(d.getTime() + JST_OFFSET_HOURS * 60 * 60000);
   const hh = String(jst.getUTCHours()).padStart(2, "0");
   const mm = String(jst.getUTCMinutes()).padStart(2, "0");
@@ -65,7 +62,6 @@ export default async function DateTimeSelectPage({
   const menu = await prisma.menu.findUnique({ where: { id: BigInt(menuId) } });
   if (!menu || !staffId) notFound();
 
-  // 対象日：今は「明日」固定（後で日付選択画面に置き換える）
   const now = new Date();
   const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
   const targetDate = new Date(
@@ -74,7 +70,6 @@ export default async function DateTimeSelectPage({
   const nextDate = new Date(targetDate);
   nextDate.setUTCDate(nextDate.getUTCDate() + 1);
 
-  // 対応可能スタッフの一覧を決める
   let candidateStaffIds: bigint[];
   if (staffId === "none") {
     const staffMenus = await prisma.staffMenu.findMany({
@@ -142,7 +137,7 @@ export default async function DateTimeSelectPage({
           {sortedSlots.map(({ time, staffId: sId }) => (
             <Link
               key={time.getTime()}
-              href={`/reserve/${menu.id}/customer?staffId=${sId}&start=${time.toISOString()}`}
+              href={`/reserve/${menu.id}/customer?staffId=${sId}&start=${time.toISOString()}&nominated=${staffId === "none" ? "0" : "1"}`}
               className="rounded border border-[#E4DDD0] py-3 text-center transition-colors hover:bg-[#F1ECE2]"
             >
               {formatTime(time)}
