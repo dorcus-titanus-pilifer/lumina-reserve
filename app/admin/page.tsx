@@ -1,0 +1,30 @@
+import { createClient } from "@/lib/supabase/server";
+import { logout } from "./logout-action";
+
+export default async function AdminHomePage() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  return (
+    <main className="min-h-screen px-6 py-16 sm:px-12">
+      <div className="mx-auto max-w-xl">
+        <p className="text-sm tracking-wide text-[#7C6A54]">Lumina 管理画面</p>
+        <h1
+          className="mt-2 text-3xl font-medium"
+          style={{ fontFamily: "var(--font-heading)" }}
+        >
+          ようこそ
+        </h1>
+        <p className="mt-4 text-[#5C5348]">{user?.email} でログイン中です。</p>
+
+        <form action={logout} className="mt-10">
+          <button type="submit" className="text-sm text-[#7C6A54] underline">
+            ログアウト
+          </button>
+        </form>
+      </div>
+    </main>
+  );
+}
