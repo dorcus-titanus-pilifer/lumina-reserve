@@ -51,6 +51,13 @@ export default async function AdminCalendarPage({
           予約カレンダー
         </h1>
 
+        <Link
+          href={`/admin/calendar/new?date=${targetDate}`}
+          className="mt-6 inline-block rounded bg-[#2A2522] px-4 py-2 text-sm text-white"
+        >
+          ＋ 手動で予約を追加
+        </Link>
+
         <div className="mt-6 flex items-center gap-4">
           <Link
             href={`/admin/calendar?date=${addDays(targetDate, -1)}`}
