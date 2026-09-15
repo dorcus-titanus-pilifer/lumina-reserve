@@ -27,6 +27,12 @@ export default async function AdminHomePage() {
           >
             予約カレンダー
           </Link>
+          <Link
+            href="/admin/shifts"
+            className="py-5 text-lg transition-colors hover:bg-[#F1ECE2]"
+          >
+            スタッフ・シフト管理
+          </Link>
         </div>
 
         <form action={logout} className="mt-10">
