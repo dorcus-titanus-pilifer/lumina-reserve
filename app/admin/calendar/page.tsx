@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { formatTime, formatDateJST, getJstDayRange, getShiftDateRange } from "@/lib/schedule";
 import Link from "next/link";
+import { updateReservationStatus } from "./actions";
 
 function addDays(dateStr: string, diff: number): string {
   const [y, m, d] = dateStr.split("-").map(Number);
@@ -32,7 +33,6 @@ export default async function AdminCalendarPage({
   const reservations = await prisma.reservation.findMany({
     where: {
       startTime: { gte: dayStart, lt: dayEnd },
-      status: { not: "CANCELLED" },
     },
     include: { customer: true, menu: true, staff: true },
     orderBy: { startTime: "asc" },
@@ -97,14 +97,64 @@ export default async function AdminCalendarPage({
                     {staffReservations.map((r) => (
                       <div
                         key={r.id.toString()}
-                        className="flex items-center justify-between rounded bg-[#F1ECE2] px-3 py-2 text-sm"
+                        className="flex flex-col gap-2 rounded bg-[#F1ECE2] px-3 py-2 text-sm sm:flex-row sm:items-center sm:justify-between"
                       >
                         <span>
                           {formatTime(r.startTime)}〜{formatTime(r.endTime)} {r.menu.title}
+                          <span className="ml-2 text-[#8A8073]">
+                            {r.customer.name}様（{r.source}）
+                          </span>
                         </span>
-                        <span className="text-[#8A8073]">
-                          {r.customer.name}様（{r.source}）
-                        </span>
+
+                        {r.status === "CONFIRMED" ? (
+                          <div className="flex gap-2">
+                            <form action={updateReservationStatus}>
+                              <input type="hidden" name="reservationId" value={r.id.toString()} />
+                              <input type="hidden" name="status" value="COMPLETED" />
+                              <input type="hidden" name="date" value={targetDate} />
+                              <button
+                                type="submit"
+                                className="rounded bg-green-100 px-2 py-1 text-xs text-green-800"
+                              >
+                                来店完了
+                              </button>
+                            </form>
+                            <form action={updateReservationStatus}>
+                              <input type="hidden" name="reservationId" value={r.id.toString()} />
+                              <input type="hidden" name="status" value="NO_SHOW" />
+                              <input type="hidden" name="date" value={targetDate} />
+                              <button
+                                type="submit"
+                                className="rounded bg-red-100 px-2 py-1 text-xs text-red-800"
+                              >
+                                ノーショー
+                              </button>
+                            </form>
+                            <form action={updateReservationStatus}>
+                              <input type="hidden" name="reservationId" value={r.id.toString()} />
+                              <input type="hidden" name="status" value="CANCELLED" />
+                              <input type="hidden" name="date" value={targetDate} />
+                              <button
+                                type="submit"
+                                className="rounded bg-gray-200 px-2 py-1 text-xs text-gray-700"
+                              >
+                                キャンセル
+                              </button>
+                            </form>
+                          </div>
+                        ) : (
+                          <span
+                            className={
+                              r.status === "NO_SHOW"
+                                ? "text-xs text-red-600"
+                                : r.status === "CANCELLED"
+                                ? "text-xs text-[#8A8073]"
+                                : "text-xs text-green-700"
+                            }
+                          >
+                            {r.status}
+                          </span>
+                        )}
                       </div>
                     ))}
                   </div>
