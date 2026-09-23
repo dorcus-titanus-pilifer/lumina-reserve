@@ -33,11 +33,17 @@ export default async function AdminHomePage() {
           >
             スタッフ・シフト管理
           </Link>
-                    <Link
+          <Link
             href="/admin/holidays"
             className="py-5 text-lg transition-colors hover:bg-[#F1ECE2]"
           >
             定休日・臨時休業設定
+          </Link>
+          <Link
+            href="/admin/customers"
+            className="py-5 text-lg transition-colors hover:bg-[#F1ECE2]"
+          >
+            顧客管理
           </Link>
         </div>
 
