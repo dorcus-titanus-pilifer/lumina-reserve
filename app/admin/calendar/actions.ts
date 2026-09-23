@@ -15,5 +15,4 @@ export async function updateReservationStatus(formData: FormData) {
 
   revalidatePath("/admin/calendar");
   revalidatePath("/admin/customers");
-  return { date };
 }
