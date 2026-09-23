@@ -33,6 +33,12 @@ export default async function AdminHomePage() {
           >
             スタッフ・シフト管理
           </Link>
+                    <Link
+            href="/admin/holidays"
+            className="py-5 text-lg transition-colors hover:bg-[#F1ECE2]"
+          >
+            定休日・臨時休業設定
+          </Link>
         </div>
 
         <form action={logout} className="mt-10">
